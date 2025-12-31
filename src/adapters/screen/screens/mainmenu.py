@@ -6,7 +6,7 @@ pirowflosettingid = 1
 
 # Main menu (screenid: 1)
 def draw(device):
-    if len(globalParameters.ipaddr) < 7:
+    if len(globalParameters.ipaddr) < 7 or len(globalParameters.ipaddr) > 19:
         globalParameters.setipaddress()
 
     #faicons = ImageFont.truetype(globalParameters.font_icons, size=18)

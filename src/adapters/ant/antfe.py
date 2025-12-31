@@ -19,6 +19,7 @@ class antFE(object):
         self.Rollovercount = 0
         self.AccumlatedElapsedTime = 0
         self.AccumlatedDistanceTravelled = 0
+        self.BatteryLow = False
 
     def BroadcastTrainerDataMessage(self,WaterrowerValuesRaw):
         self.WaterrowerValueRaw = WaterrowerValuesRaw
@@ -33,7 +34,8 @@ class antFE(object):
         self.InstPower = max(0, self.InstPower)  # Not negative
         self.InstPower = min(65533, self.InstPower)  # Limit to 4093
 
-
+        if 'battery_low' in WaterrowerValuesRaw:
+            self.BatteryLow = WaterrowerValuesRaw['battery_low']
 
         if self.EventCounter % 64 in (30, 31):  # After 10 blocks of three messages, then 2 = 32 messages
             self.info = self._ant_dongle.msgPage80_ManufacturerInfo(self._ant_dongle.channel_FE, 0xff, 0xff, self._ant_dongle.HWrevision_FE, self._ant_dongle.Manufacturer_waterrower, self._ant_dongle.ModelNumber_FE)
@@ -43,8 +45,13 @@ class antFE(object):
             self.info = self._ant_dongle.msgPage81_ProductInformation(self._ant_dongle.channel_FE, 0xff, self._ant_dongle.SWrevisionSupp_FE, self._ant_dongle.SWrevisionMain_FE, self._ant_dongle.SerialNumber_FE)
             self.fedata = self._ant_dongle.ComposeMessage(self._ant_dongle.msgID_BroadcastData, self.info)
 
-        elif self.EventCounter % 3 == 0 or self.EventCounter % 4 == 0:
+        elif self.EventCounter % 64 in (14, 15):
+            print('Battery='+str(self.BatteryLow))
+            self.info = self._ant_dongle.msgPage82_BatteryStatus(self._ant_dongle.channel_FE, self.BatteryLow)
+            self.fedata = self._ant_dongle.ComposeMessage(self._ant_dongle.msgID_BroadcastData, self.info)
+            print('fe='+str(self.fedata))
 
+        elif self.EventCounter % 3 == 0 or self.EventCounter % 4 == 0:
             self.AccumlatedStrokecount = self.Rollovercalc(self.StrokeCount,254)
             self.info = self._ant_dongle.msgPage22_RowingData(self._ant_dongle.channel_FE, self.AccumlatedStrokecount, self.Cadence, self.InstPower)
             self.fedata = self._ant_dongle.ComposeMessage(self._ant_dongle.msgID_BroadcastData, self.info)

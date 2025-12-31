@@ -56,7 +56,8 @@ class DataLogger():
             'stroke_length': 0,
             'force': 0,
             'watts_avg':0,
-            'pace_avg':0
+            'pace_avg':0,
+            'battery_low':False
         }
         self.WRValues = deepcopy(self.WRValues_rst)
         self.WRValues_standstill = deepcopy(self.WRValues_rst)
@@ -206,6 +207,10 @@ class DataLogger():
                     self.WRValues.update({'speed': 0})
                 pace_avg = int(event[9])*60 + int(event[10:12])
                 self.WRValues.update({'pace_avg': pace_avg})
+                if event[12] == '!':
+                    self.WRValues.update({'battery_low': True})
+                else:
+                    self.WRValues.update({'battery_low': False})
                 self.elapsedtime()
 
             elif event[0] == self.FORCE_MESSAGE:

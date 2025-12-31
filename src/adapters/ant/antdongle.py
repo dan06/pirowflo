@@ -948,3 +948,27 @@ class clsAntDongle():
         tuple = struct.unpack(format, info)
 
         return tuple[0], tuple[1], tuple[2], tuple[3], tuple[4], tuple[5]
+
+    def msgPage82_BatteryStatus(self, Channel, batteryLow):
+        DataPageNumber = 82
+        Reserved1 = 0xff
+
+        if batteryLow:
+            descriptive = 0x4f
+        else:
+            descriptive = 0x3f
+
+        fChannel = sc.unsigned_char  # First byte of the ANT+ message content
+        fDataPageNumber = sc.unsigned_char  # First byte of the ANT+ datapage (payload)
+        fReserved1 = sc.unsigned_char
+        fBatteryIdentifier = sc.unsigned_char
+        fCumTime1 = sc.unsigned_char
+        fCumTime2 = sc.unsigned_char
+        fCumTime3 = sc.unsigned_char
+        fFractionalBatteryVoltage = sc.unsigned_char
+        fDescriptive = sc.unsigned_char
+
+        format = sc.no_alignment + fChannel + fDataPageNumber + fReserved1 + fBatteryIdentifier + fCumTime1 + fCumTime2 + fCumTime3 + fFractionalBatteryVoltage + fDescriptive
+        info = struct.pack(format, Channel, DataPageNumber, Reserved1, 0xff, 0x00, 0x10, 0x00, 0xff, descriptive)
+
+        return info
